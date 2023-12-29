@@ -42,13 +42,18 @@ class SnakeGameAI:
         self.reset()
 
 
-    def reset(self):
+    def reset(self, n_games = 0):
         # init game state
         directions = [Direction.RIGHT]
-        self.direction = random.choice(directions) # exploring start
+        self.direction = random.choice(directions)
 
-        x_start = random.randint((self.w-3*BLOCK_SIZE )//BLOCK_SIZE, (self.w-2*BLOCK_SIZE )//BLOCK_SIZE )*BLOCK_SIZE 
-        y_start = random.randint(0, (self.w-BLOCK_SIZE )//BLOCK_SIZE )*BLOCK_SIZE
+        x_start = WINDOW_W // 2 # start at center
+        y_start = WINDOW_H // 2 # start at center
+
+        if n_games < 100:
+            x_start = random.randint((self.w-3*BLOCK_SIZE )//BLOCK_SIZE, (self.w-2*BLOCK_SIZE )//BLOCK_SIZE )*BLOCK_SIZE 
+            y_start = random.randint(0, (self.w-BLOCK_SIZE )//BLOCK_SIZE )*BLOCK_SIZE
+
         self.head = Point(x_start, y_start) # exploring start
         self.snake = [self.head,
                       Point(self.head.x-BLOCK_SIZE, self.head.y),
