@@ -105,7 +105,7 @@ class SnakeGameAI:
             self.snake.pop()
 
         # discourage bot to move away from food in the beginning.
-        is_short_snake = self.length < 4
+        is_short_snake = self.length < 5
         is_moving_away = (
             (self.head.x < self.food.x and self.direction == Direction.LEFT) or 
             (self.head.x > self.food.x and self.direction == Direction.RIGHT) or 
@@ -126,7 +126,7 @@ class SnakeGameAI:
                                distance_to_right_wall, 
                                distance_to_top_wall) / BLOCK_SIZE
 
-        reward -= (distance_to_wall-1)*0.01#*(self.length/3)
+        reward -= (distance_to_wall-1)*0.01 # *(self.length/25) #/100
 
 
         # 5. update ui and clock

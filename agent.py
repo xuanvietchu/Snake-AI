@@ -18,7 +18,7 @@ class Agent:
         self.epsilon = 0.05 # randomness
         self.gamma = 0.9 # discount rate
         self.memory = deque(maxlen=MAX_MEMORY) # popleft()
-        self.model = Linear_QNet(17, 3)
+        self.model = Linear_QNet(18, 3)
         self.trainer = None
         if not test:
             self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
@@ -46,7 +46,8 @@ class Agent:
         # Calculate distances to food (x and y direction)
         distance_to_food_x = game.food.x - head.x
         distance_to_food_y = game.food.y - head.y
-
+        
+        snake_length = len(game.snake) / (WINDOW_H * WINDOW_W)
         state = [
             # Danger straight
             (dir_r and game.is_collision(point_r)) or 
@@ -85,6 +86,9 @@ class Agent:
             
             distance_to_food_x / WINDOW_W,
             distance_to_food_y / WINDOW_H,
+
+            # snake length
+            snake_length        
             ]
 
         return np.array(state, dtype=int)
@@ -177,14 +181,14 @@ def train():
             mean_score = total_score / agent.n_games
             plot_mean_scores.append(mean_score)
 
-            # For training
-            # if agent.n_games == 100: # Early stop if performance not satisfied
-            #     if mean_score < 0.1 or record < 4:
-            #         elapsed_time = time.time() - start_time  # Calculate elapsed time
-            #         print(f'Game {agent.n_games}, Score: {sum(plot_scores[-30:])/30}, Record: {record}, Time taken: {elapsed_time*100:.2f} seconds')
-            #         plot_file_name = f'LR_{lr}.png'
-            #         plot(plot_scores, plot_mean_scores, agent.n_games, file_name=plot_file_name)
-            #         break
+            # For tuning
+            if agent.n_games == 100: # Early stop if performance not satisfied
+                if mean_score < 0.1 or record < 4:
+                    elapsed_time = time.time() - start_time  # Calculate elapsed time
+                    print(f'Game {agent.n_games}, Score: {sum(plot_scores[-30:])/30}, Record: {record}, Time taken: {elapsed_time*100:.2f} seconds')
+                    plot_file_name = f'LR_{lr}.png'
+                    plot(plot_scores, plot_mean_scores, agent.n_games, file_name=plot_file_name)
+                    break
             
             # For training
             # if agent.n_games == 200:
@@ -192,7 +196,7 @@ def train():
             #             print(f"Rerunning training due to mean_score {mean_score} < 7 (bad start)")
             #             return False  # Signal to rerun training
 
-            if agent.n_games == 200: #1200
+            if agent.n_games == 200: #200
                 elapsed_time = time.time() - start_time  # Calculate elapsed time
                 print(f'Game {agent.n_games}, Score: {sum(plot_scores[-30:])/10}, Record: {record}, Time taken: {elapsed_time*200:.2f} seconds')
                 plot_file_name = f'LR_{lr}.png'
@@ -210,7 +214,7 @@ if __name__ == '__main__':
     for lr in lr_values:
         LR = lr
         train()
-    # LR = 1e-04
+    # LR = 8e-05
     # lr = LR
     # rerun = train()
     # while not rerun:
