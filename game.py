@@ -92,7 +92,7 @@ class SnakeGameAI:
         game_over = False
         if self.is_collision() or self.frame_iteration > 100*self.length:
             game_over = True
-            reward = -1
+            reward = -0.8 # -1
             return reward, game_over, self.score
 
         # 4. place new food or just move
@@ -103,7 +103,8 @@ class SnakeGameAI:
             self._place_food()
         else:
             self.snake.pop()
-        
+
+        # discourage bot to move away from food in the beginning.
         is_short_snake = self.length < 4
         is_moving_away = (
             (self.head.x < self.food.x and self.direction == Direction.LEFT) or 
@@ -114,6 +115,19 @@ class SnakeGameAI:
 
         if is_short_snake and is_moving_away:
             reward = -0.2
+
+        # Encourage the bot to be near wall when it gets longer
+        distance_to_left_wall = self.head.x
+        distance_to_right_wall = WINDOW_W - self.head.x
+        distance_to_top_wall = self.head.y
+        distance_to_bottom_wall = WINDOW_H - self.head.y
+        distance_to_wall = min(distance_to_bottom_wall, 
+                               distance_to_left_wall, 
+                               distance_to_right_wall, 
+                               distance_to_top_wall) / BLOCK_SIZE
+
+        reward -= (distance_to_wall-1)*0.01#*(self.length/3)
+
 
         # 5. update ui and clock
         self._update_ui()
