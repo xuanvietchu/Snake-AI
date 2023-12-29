@@ -92,7 +92,7 @@ class SnakeGameAI:
         game_over = False
         if self.is_collision() or self.frame_iteration > 100*self.length:
             game_over = True
-            reward = -0.8 # -1
+            reward = -1 # -0.8
             return reward, game_over, self.score
 
         # 4. place new food or just move
@@ -105,7 +105,7 @@ class SnakeGameAI:
             self.snake.pop()
 
         # discourage bot to move away from food in the beginning.
-        is_short_snake = self.length < 5
+        is_short_snake = self.length < 4
         is_moving_away = (
             (self.head.x < self.food.x and self.direction == Direction.LEFT) or 
             (self.head.x > self.food.x and self.direction == Direction.RIGHT) or 

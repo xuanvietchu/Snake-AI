@@ -31,6 +31,38 @@ class Linear_QNet(nn.Module):
         torch.save(self.state_dict(), file_name)
 
 
+# class CNN_QNet(nn.Module):
+#     def __init__(self, input_channels, output_size):
+#         super().__init__()
+#         self.conv1 = nn.Conv2d(in_channels=input_channels, out_channels=32, kernel_size=7, stride=4)
+#         self.conv2 = nn.Conv2d(in_channels=32, out_channels=64, kernel_size=5, stride=2)
+#         self.conv3 = nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, stride=2)
+#         self.fc1 = nn.Linear(2*2*128, 512)
+#         self.output = nn.Linear(512, output_size)
+
+#     def forward(self, x):
+#         if len(x.shape) == 3:
+#             x = x.permute(2, 0, 1) # Change shape from (h, w, 3) to (3, h, w)
+#         else:
+#             x = x.permute(0, 3, 1, 2) # Change shape from (batch, h, w, 3) to (batch, 3, h, w)
+#         x = x / 255.0  # Normalize state space
+#         x = F.relu(self.conv1(x))
+#         x = F.relu(self.conv2(x))
+#         x = F.relu(self.conv3(x))
+        
+#         x = x.reshape(-1, 2*2*128)  # Reshape for the fully connected layer
+#         x = F.relu(self.fc1(x))
+#         x = self.output(x)
+#         return x
+
+#     def save(self, file_name='model.pth'):
+#         model_folder_path = './model'
+#         if not os.path.exists(model_folder_path):
+#             os.makedirs(model_folder_path)
+
+#         file_name = os.path.join(model_folder_path, file_name)
+#         torch.save(self.state_dict(), file_name)
+
 class QTrainer:
     def __init__(self, model, lr, gamma):
         self.lr = lr

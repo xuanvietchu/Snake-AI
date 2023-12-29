@@ -163,15 +163,15 @@ def train():
             if score > record:
                 record = score
             # For training
-            #     try:
-            #         torch.save(agent.model.state_dict(), './model/best.pth') # occasionally fail
-            #     except:
-            #         print(f"fail to save best model at game {agent.n_games}")
-            # elif agent.n_games % 10 == 0:
-            #     try:
-            #         torch.save(agent.model.state_dict(), './model/last.pth') # occasionally fail
-            #     except:
-            #         print(f"fail to save last model at game {agent.n_games}")
+                try:
+                    torch.save(agent.model.state_dict(), './model/best.pth') # occasionally fail
+                except:
+                    print(f"fail to save best model at game {agent.n_games}")
+            elif agent.n_games % 10 == 0:
+                try:
+                    torch.save(agent.model.state_dict(), './model/last.pth') # occasionally fail
+                except:
+                    print(f"fail to save last model at game {agent.n_games}")
                 
 
             print(LR, agent.n_games)
@@ -182,21 +182,21 @@ def train():
             plot_mean_scores.append(mean_score)
 
             # For tuning
-            if agent.n_games == 100: # Early stop if performance not satisfied
-                if mean_score < 0.1 or record < 4:
-                    elapsed_time = time.time() - start_time  # Calculate elapsed time
-                    print(f'Game {agent.n_games}, Score: {sum(plot_scores[-30:])/30}, Record: {record}, Time taken: {elapsed_time*100:.2f} seconds')
-                    plot_file_name = f'LR_{lr}.png'
-                    plot(plot_scores, plot_mean_scores, agent.n_games, file_name=plot_file_name)
-                    break
+            # if agent.n_games == 100: # Early stop if performance not satisfied
+            #     if mean_score < 0.1 or record < 4:
+            #         elapsed_time = time.time() - start_time  # Calculate elapsed time
+            #         print(f'Game {agent.n_games}, Score: {sum(plot_scores[-30:])/30}, Record: {record}, Time taken: {elapsed_time*100:.2f} seconds')
+            #         plot_file_name = f'LR_{lr}.png'
+            #         plot(plot_scores, plot_mean_scores, agent.n_games, file_name=plot_file_name)
+            #         break
             
             # For training
-            # if agent.n_games == 200:
-            #     if mean_score < 7:
-            #             print(f"Rerunning training due to mean_score {mean_score} < 7 (bad start)")
-            #             return False  # Signal to rerun training
+            if agent.n_games == 200:
+                if mean_score < 7:
+                        print(f"Rerunning training due to mean_score {mean_score} < 7 (bad start)")
+                        return False  # Signal to rerun training
 
-            if agent.n_games == 200: #200
+            if agent.n_games == 1200: #200
                 elapsed_time = time.time() - start_time  # Calculate elapsed time
                 print(f'Game {agent.n_games}, Score: {sum(plot_scores[-30:])/10}, Record: {record}, Time taken: {elapsed_time*200:.2f} seconds')
                 plot_file_name = f'LR_{lr}.png'
@@ -205,17 +205,17 @@ def train():
 
 
 if __name__ == '__main__':
-    lr_values = [
-        1e-5, 2e-5, 3e-5, 4e-5, 5e-5, 6e-5, 7e-5, 8e-5, 9e-5,
-        1e-4, 2e-4, 3e-4, 4e-4, 5e-4, 6e-4, 7e-4, 8e-4, 9e-4,
-        1e-3, 2e-3, 3e-3, 4e-3, 5e-3, 6e-3, 7e-3, 8e-3, 9e-3,
-        ]
-    # lr_values = [1]
-    for lr in lr_values:
-        LR = lr
-        train()
-    # LR = 8e-05
-    # lr = LR
-    # rerun = train()
-    # while not rerun:
-    #     rerun = train()
+    # lr_values = [
+    #     1e-5, 2e-5, 3e-5, 4e-5, 5e-5, 6e-5, 7e-5, 8e-5, 9e-5,
+    #     1e-4, 2e-4, 3e-4, 4e-4, 5e-4, 6e-4, 7e-4, 8e-4, 9e-4,
+    #     1e-3, 2e-3, 3e-3, 4e-3, 5e-3, 6e-3, 7e-3, 8e-3, 9e-3,
+    #     ]
+    # # lr_values = [1]
+    # for lr in lr_values:
+    #     LR = lr
+    #     train()
+    LR = 1e-04
+    lr = LR
+    rerun = train()
+    while not rerun:
+        rerun = train()
