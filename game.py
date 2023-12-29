@@ -44,7 +44,7 @@ class SnakeGameAI:
 
     def reset(self):
         # init game state
-        directions = [Direction.UP, Direction.DOWN, Direction.RIGHT]
+        directions = [Direction.RIGHT]
         self.direction = random.choice(directions) # exploring start
 
         x_start = random.randint((self.w-3*BLOCK_SIZE )//BLOCK_SIZE, (self.w-2*BLOCK_SIZE )//BLOCK_SIZE )*BLOCK_SIZE 
@@ -83,9 +83,9 @@ class SnakeGameAI:
         
         # 3. check if game over
 
-        reward = 0
+        reward = -0.01
         game_over = False
-        if self.is_collision() or self.frame_iteration > 50*self.length:
+        if self.is_collision() or self.frame_iteration > 100*self.length:
             game_over = True
             reward = -1
             return reward, game_over, self.score
@@ -99,16 +99,16 @@ class SnakeGameAI:
         else:
             self.snake.pop()
         
-        # is_short_snake = self.length < 6
-        # is_moving_away = (
-        #     (self.head.x < self.food.x and self.direction == Direction.LEFT) or 
-        #     (self.head.x > self.food.x and self.direction == Direction.RIGHT) or 
-        #     (self.head.y < self.food.y and self.direction == Direction.UP) or 
-        #     (self.head.y > self.food.y and self.direction == Direction.DOWN)
-        # )
+        is_short_snake = self.length < 4
+        is_moving_away = (
+            (self.head.x < self.food.x and self.direction == Direction.LEFT) or 
+            (self.head.x > self.food.x and self.direction == Direction.RIGHT) or 
+            (self.head.y < self.food.y and self.direction == Direction.UP) or 
+            (self.head.y > self.food.y and self.direction == Direction.DOWN)
+        )
 
-        # if is_short_snake and is_moving_away:
-        #     reward = -10
+        if is_short_snake and is_moving_away:
+            reward = -0.2
 
         # 5. update ui and clock
         self._update_ui()

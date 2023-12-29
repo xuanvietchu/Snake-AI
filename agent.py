@@ -18,7 +18,7 @@ class Agent:
         self.epsilon = 0.05 # randomness
         self.gamma = 0.9 # discount rate
         self.memory = deque(maxlen=MAX_MEMORY) # popleft()
-        self.model = Linear_QNet(17, 3)
+        self.model = Linear_QNet(18, 3)
         self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
 
 
@@ -44,6 +44,8 @@ class Agent:
         # Calculate distances to food (x and y direction)
         distance_to_food_x = game.food.x - head.x
         distance_to_food_y = game.food.y - head.y
+
+        snake_length = len(game.snake)
 
         state = [
             # Danger straight
@@ -82,7 +84,7 @@ class Agent:
             distance_to_bottom_wall / WINDOW_H,
             
             distance_to_food_x / WINDOW_W,
-            distance_to_food_y / WINDOW_H
+            distance_to_food_y / WINDOW_H,
             ]
 
         return np.array(state, dtype=int)
@@ -156,16 +158,25 @@ def train():
 
             if score > record:
                 record = score
-                agent.model.save()
+                # agent.model.save()
 
             plot_scores.append(score)
             total_score += score
             mean_score = total_score / agent.n_games
             plot_mean_scores.append(mean_score)
             print(LR, agent.n_games)
+
+            if agent.n_games == 100: # Early stop if performance not satisfied
+                if mean_score < 0.1 or record < 4:
+                    elapsed_time = time.time() - start_time  # Calculate elapsed time
+                    print(f'Game {agent.n_games}, Score: {sum(plot_scores[-30:])/30}, Record: {record}, Time taken: {elapsed_time*100:.2f} seconds')
+                    plot_file_name = f'LR_{lr}.png'
+                    plot(plot_scores, plot_mean_scores, agent.n_games, file_name=plot_file_name)
+                    break
+
             if agent.n_games == 200:
                 elapsed_time = time.time() - start_time  # Calculate elapsed time
-                print(f'Game {agent.n_games}, Score: {sum(plot_scores[-10:])/10}, Record: {record}, Time taken: {elapsed_time*10:.2f} seconds')
+                print(f'Game {agent.n_games}, Score: {sum(plot_scores[-30:])/10}, Record: {record}, Time taken: {elapsed_time*200:.2f} seconds')
                 plot_file_name = f'LR_{lr}.png'
                 plot(plot_scores, plot_mean_scores, agent.n_games, file_name=plot_file_name)
                 break
@@ -174,9 +185,13 @@ def train():
 if __name__ == '__main__':
     lr_values = [
         1e-5, 2e-5, 3e-5, 4e-5, 5e-5, 6e-5, 7e-5, 8e-5, 9e-5,
-        1e-4, 2e-4, 3e-4, 4e-4, 5e-4, 6e-4, 7e-4, 8e-4, 9e-4 
+        1e-4, 2e-4, 3e-4, 4e-4, 5e-4, 6e-4, 7e-4, 8e-4, 9e-4,
+        1e-3, 2e-3, 3e-3, 4e-3, 5e-3, 6e-3, 7e-3, 8e-3, 9e-3,
         ]
     # lr_values = [1]
     for lr in lr_values:
         LR = lr
         train()
+    # LR = 5e-05
+    # lr = LR
+    # train()

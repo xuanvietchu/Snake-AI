@@ -44,15 +44,14 @@ class QTrainer:
         next_state = torch.tensor(np.array(next_state), dtype=torch.float).to(device)
         action = torch.tensor(np.array(action), dtype=torch.long).to(device)
         reward = torch.tensor(np.array(reward), dtype=torch.float).to(device)
-        # (n, x)
+        done = torch.tensor(np.array(done), dtype=torch.bool).to(device)
 
-        if len(state.shape) == 1:
-            # (1, x)
-            state = torch.unsqueeze(state, 0)
-            next_state = torch.unsqueeze(next_state, 0)
-            action = torch.unsqueeze(action, 0)
-            reward = torch.unsqueeze(reward, 0)
-            done = (done, )
+        if done.dim() == 0:
+            state = state.unsqueeze(0)
+            next_state = next_state.unsqueeze(0)
+            action = action.unsqueeze(0)
+            reward = reward.unsqueeze(0)
+            done = done.unsqueeze(0)
 
         # 1: predicted Q values with current state
         pred = self.model(state)
@@ -60,19 +59,28 @@ class QTrainer:
         target = pred.clone()
 
         # q_lr = 0.9
-        for idx in range(len(done)):
-            # Q = target[idx][torch.argmax(action[idx]).item()]
-            # Q_new = Q + q_lr*(reward[idx] - Q)
-            Q_new = reward[idx]
-            if not done[idx]:
-                Q_new = reward[idx] + self.gamma * torch.max(self.model(next_state[idx]))
-                # Q_new = Q + q_lr*(reward[idx] + self.gamma * torch.max(self.model(next_state[idx])) - Q)
+        # for idx in range(len(done)):
+        #     # Q = target[idx][torch.argmax(action[idx]).item()]
+        #     # Q_new = Q + q_lr*(reward[idx] - Q)
+        #     Q_new = reward[idx]
+        #     if not done[idx]:
+        #         Q_new = reward[idx] + self.gamma * torch.max(self.model(next_state[idx]))
+        #         # Q_new = Q + q_lr*(reward[idx] + self.gamma * torch.max(self.model(next_state[idx])) - Q)
 
-            target[idx][torch.argmax(action[idx]).item()] = Q_new
+        #     target[idx][torch.argmax(action[idx]).item()] = Q_new
+
+        # Parallelized Q update
+        Q_new = reward.clone()
+        not_done_indices = ~done
+
+        max_next_Q_vals = torch.max(self.model(next_state), dim=1)[0]
+        Q_new[not_done_indices] += self.gamma * max_next_Q_vals[not_done_indices]
+
+        # Update Q-values in the target tensor
+        for idx in range(done.dim()):
+            target[idx][torch.argmax(action[idx]).item()] = Q_new[idx]
     
-        # 2: Q_new = r + y * max(next_predicted Q value) -> only do this if not done
-        # pred.clone()
-        # preds[argmax(action)] = Q_new
+        
         self.optimizer.zero_grad()
         loss = self.criterion(target, pred)
         loss.backward()
